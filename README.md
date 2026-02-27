@@ -1,31 +1,31 @@
 # simd-micro-codec
 
-`simd-micro-codec` は、Hex変換専用の高速Cライブラリです。
+`simd-micro-codec` is a high-performance C library focused on Hex conversion.
 
 - Encode: `bytes -> lowercase hex`
 - Decode: `hex -> bytes`
 
-機能を絞って、性能と信頼性を優先しています。
+The project intentionally keeps the scope narrow to prioritize speed, correctness, and simplicity.
 
-## 特徴
+## Features
 
-- SIMD最適化
+- SIMD-optimized implementations
   - ARM64: NEON
-  - x86_64: AVX2（実行時判定）
-- Scalarフォールバック
-- ライブラリ内部で動的メモリ確保なし
-- 厳格な引数検証と明確なステータスコード
-- テスト、Sanitizer、静的解析を標準化
+  - x86_64: AVX2 (runtime dispatch)
+- Scalar fallback path
+- No dynamic memory allocation inside the library
+- Strict argument validation with explicit status codes
+- Standardized test, sanitizer, and static-analysis workflow
 
-## 対応環境
+## Requirements
 
-- C11コンパイラ
+- C11 compiler
 - `make`
 
-検証環境例:
+Validated example environment:
 - Apple Clang 17
 
-## クイックスタート
+## Quick Start
 
 ```sh
 make test
@@ -34,42 +34,42 @@ make static-analysis
 make compile-x86
 ```
 
-ベンチマーク:
+Benchmark:
 
 ```sh
 make bench
 ./build/bench 64
 ```
 
-外部比較ベンチ（OpenSSL/naive比較）:
+Comparison benchmark (OpenSSL / naive):
 
 ```sh
 make bench-compare
 ./build/bench_compare 64
 ```
 
-直近実測（64MB, `bench_compare`）:
+Recent sample result (`64MB`, `bench_compare`):
 
 | Metric | smc | OpenSSL 3.6.1 | naive |
 |---|---:|---:|---:|
-| Encode GB/s | 19.617 | 1.560 | 2.001 |
-| Decode GB/s | 8.614 | 0.413 | 0.560 |
+| Encode GB/s | 18.740 | 1.394 | 1.980 |
+| Decode GB/s | 8.199 | 0.379 | 0.530 |
 
-速度倍率（smc基準）:
+Speedup (smc baseline):
 
-1. Encode vs OpenSSL: `12.57x`
-2. Decode vs OpenSSL: `20.83x`
-3. Encode vs naive: `9.80x`
-4. Decode vs naive: `15.39x`
+1. Encode vs OpenSSL: `13.45x`
+2. Decode vs OpenSSL: `21.64x`
+3. Encode vs naive: `9.46x`
+4. Decode vs naive: `15.46x`
 
-注記:
+Notes:
 
-1. ベンチ値はCPU/OS/コンパイラ条件で変動します。
-2. 同一環境・同一コマンドで比較してください。
+1. Benchmark numbers vary by CPU, OS, and compiler.
+2. Use the same machine and command for fair comparison.
 
 ## API
 
-ヘッダ: `include/smc_hex.h`
+Header: `include/smc_hex.h`
 
 ```c
 typedef enum smc_status {
@@ -96,15 +96,15 @@ smc_status smc_hex_decode(const char *src,
 size_t smc_hex_encode_required_size(size_t src_len);
 ```
 
-## API契約
+## API Behavior
 
-- `decode` 入力は偶数長が必須
-- 失敗時は常に `*written = 0`
-- `src` と `dst` のオーバーラップは `SMC_ERR_OVERLAP`
-- バッファ不足は `SMC_ERR_DST_TOO_SMALL`
-- `SMC_FORCE_SCALAR=1` で強制的にScalar実装を使用
+- `decode` input length must be even
+- On failure, `*written` is always set to `0`
+- Overlap between `src` and `dst` returns `SMC_ERR_OVERLAP`
+- Insufficient output buffer returns `SMC_ERR_DST_TOO_SMALL`
+- Set `SMC_FORCE_SCALAR=1` to force scalar implementation
 
-## 使い方
+## Usage
 
 ```c
 #include "smc_hex.h"
@@ -130,20 +130,27 @@ int main(void) {
 }
 ```
 
-## リポジトリ構成
+## Repository Layout
 
-- `include/smc_hex.h`: 公開API
-- `src/smc_hex.c`: 実装
-- `tests/test_smc_hex.c`: 基本/境界/異常系テスト
-- `tests/test_fuzz.c`: ランダムテスト
-- `tests/test_thread_init.c`: 並列初期化テスト
-- `bench/bench.c`: スループット計測
-- `SPEC.md`: 仕様書
+- `include/smc_hex.h`: Public API
+- `src/smc_hex.c`: Implementation
+- `tests/test_smc_hex.c`: Basic, boundary, and error tests
+- `tests/test_fuzz.c`: Randomized fuzz-style tests
+- `tests/test_thread_init.c`: Concurrent initialization test
+- `bench/bench.c`: Throughput benchmark
+- `bench/bench_compare.c`: OpenSSL and naive comparison benchmark
 
-## ライセンス
+## License
 
-MIT License。詳細は `LICENSE` を参照してください。
+MIT License. See `LICENSE` for details.
 
-## 詳細ドキュメント
+## Disclaimer
 
-設計・API契約・テスト戦略・運用上の注意は `DOCUMENTATION.md` を参照してください。
+- This project is provided "as is", without warranties of any kind.
+- Benchmark numbers in this repository are sample results, not performance guarantees.
+- You are responsible for validating correctness, security, and performance in your own environment before production use.
+- The authors and contributors are not liable for any damages resulting from the use of this software.
+
+## Detailed Documentation
+
+For architecture, API behavior, test strategy, and operational notes, see `DOCUMENTATION.md`.
